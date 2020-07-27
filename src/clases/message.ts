@@ -1,8 +1,8 @@
 
 export class DataGram {
     constructor(
-        public from: string,
-        public date: string,
+        public userlogin: string,
+        public create_at: string,
         public payload: DataGramPayload
     ) {
 

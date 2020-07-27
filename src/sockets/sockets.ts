@@ -1,8 +1,8 @@
 import SocketIO, { Socket } from 'socket.io';
-import { Connection } from 'mysql';
+import { Client } from 'pg';
 
 // Local import
-import { Message } from '../clases/message';
+import { DataGram } from '../clases/message';
 import { usersOnline, bannedUsers } from '../clases/users';
 import { User } from '../clases/user';
 
@@ -22,25 +22,24 @@ const groserias = [
     { key: 'mal nacido', value: '*** ******' },
 ]
 
-const saveMessageToDB = (payload: Message, db: Connection) => {
-    const query = `INSERT INTO Messages (\`from\`, \`date\`, \`message\`) VALUES ('${payload.from}', now(), '${payload.message}')`;
+const saveMessageToDB = (payload: DataGram, db: Client) => {
+    const query = `INSERT INTO Messages (userlogin, payload) VALUES ('${payload.userlogin}', '${JSON.stringify(payload.payload)}')`;
     db.query(query, (error) => {
         if(error) {throw error}
     });
 }
 
-const cleanMessages = ({from, date, color, message, gif} : Message): Message => {
+const cleanMessages = ({userlogin, create_at, payload: {color, message, gif}} : DataGram): DataGram => {
     let filterMessage = message 
     for (const { key, value } of groserias) {
         filterMessage = filterMessage.replace(key , value)
     }
     
-    return {from, date, color, gif, message: filterMessage }
+    return {userlogin, create_at, payload: {color, gif, message: filterMessage} }
 }
 
-export const message = (client: Socket, io: SocketIO.Server, db: Connection) => {
-    client.on('messages', (payload: Message) => {
-        console.log(payload);
+export const message = (client: Socket, io: SocketIO.Server, db: Client) => {
+    client.on('messages', (payload: DataGram) => {
         const filterPayload = cleanMessages(payload);
         saveMessageToDB(filterPayload, db);
         io.emit('messages', filterPayload)

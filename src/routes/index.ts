@@ -1,6 +1,6 @@
 import jwt from 'express-jwt';
 import express, { Router } from 'express';
-import { Connection } from 'mysql';
+import { Client } from 'pg';
 
 // Local Controllers
 import { MessagesContoller } from './messages';
@@ -9,7 +9,7 @@ export class APIV1Controller {
     router: Router
 
     constructor(
-        private db: Connection
+        private db: Client
     ) {
         this.router = Router();
         this.registerRoutes();

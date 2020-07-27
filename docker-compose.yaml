@@ -1,0 +1,28 @@
+version: '3'
+
+volumes:
+  local_postgres_data: {}
+
+services:
+  node:
+    build:
+      context: .
+      dockerfile: ./compose/dev/node/Dockerfile
+    image: chat
+    depends_on:
+      - postgres
+    volumes:
+      - ./src/dist/:/app/bin/
+    env_file:
+      - ./.environments/dev/postgres/.postgres
+    ports:
+      - 5000:5000
+
+  postgres:
+    image: postgres:10.5
+    volumes:
+      - local_postgres_data:/var/lib/postgresql/data
+    env_file:
+      - ./.environments/dev/postgres/.postgres
+    ports:
+      - 5432:5432

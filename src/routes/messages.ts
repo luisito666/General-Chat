@@ -1,12 +1,12 @@
 import { Router, Request, Response } from 'express';
-import { Connection } from 'mysql';
+import { Client } from 'pg';
 
 
 export class MessagesContoller {
     router: Router
 
     constructor(
-        private db: Connection
+        private db: Client
     ) {
         this.router = Router();
         this.registerRoutes();
@@ -22,12 +22,17 @@ export class MessagesContoller {
         const per_page = Number(req.query.per_page) || 10;
 
         const offset = (page - 1) * per_page;
-        const query = `SELECT id, \`from\`, \`date\`, message FROM Messages ORDER BY date DESC LIMIT ${offset}, ${per_page}`;
+        const query = ` SELECT id, userlogin, create_at, payload 
+                        FROM Messages 
+                        ORDER BY create_at DESC 
+                        OFFSET ${offset} 
+                        LIMIT ${per_page}`; // 
         
-        this.db.query(query, (err, results) => {
+        this.db.query(query, (err, {rows}) => {
+
             res.json({
                 ok: true,
-                messages: results
+                messages: rows
             });
         });
     }
